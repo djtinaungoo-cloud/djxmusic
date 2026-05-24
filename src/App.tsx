@@ -203,8 +203,10 @@ function App() {
             <div>
               <h2 className="text-4xl md:text-5xl font-black italic mb-4">LATEST SETS</h2>
               <p className="text-gray-400 max-w-xl">
-                Explore the different dimensions of trance. From the uplifting energy of 'Journey' 
-                to the deep textures of 'Emotions'.
+                Explore the different dimensions of trance. 
+                From the uplifting energy of 'Journey' 
+                The smooth melodic groovez of 'Progression'
+                to the epic orchestral emotion of 'Symphonica'
               </p>
             </div>
             
@@ -305,10 +307,10 @@ function App() {
               <h2 className="text-5xl font-black italic mb-8">TIN AUNG OO <br/> <span className="text-gray-500">A.K.A DJX</span></h2>
               <div className="space-y-6 text-gray-400 leading-relaxed text-lg">
                 <p>
-                  Hailing from the vibrant city of Yangon, Myanmar, DJX has established himself as a prominent figure in the global trance scene. With a career spanning over a decade, his "DJX Trance Mixes" have become a staple for fans of uplifting and progressive sounds.
+                  Hailing from the vibrant city of Yangon, Myanmar, DJX has established himself as a prominent figure in the local and global trance scene. With a career spanning over three decade, his "JOURNEY" mix series have become a staple for fans of uplifting and progressive sounds.
                 </p>
                 <p>
-                  His signature series, <span className="text-white font-bold">Journey</span>, takes listeners through the peak-time energy of modern trance, while <span className="text-white font-bold">Progression</span> explores the deeper, melodic side of the genre.
+                  His signature series, <span className="text-white font-bold">Symphonica</span>, takes listeners through the peak-time energy of modern trance, with a twist of epic orchestra while <span className="text-white font-bold">Progression</span> explores the deeper, melodic side of the genre.
                 </p>
                 <p>
                   "Music is a universal language, and trance is its most emotional dialect," says DJX. This philosophy drives every set, ensuring a connection that transcends borders and cultures.
