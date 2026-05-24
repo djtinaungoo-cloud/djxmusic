@@ -1,0 +1,1754 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEXUS — Trance DJ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syncopate:wght@400;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Syncopate', 'sans-serif'],
+            body: ['Space Grotesk', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            void: '#06060a',
+            void2: '#0b0b14',
+            void3: '#11111e',
+            neon: {
+              cyan: '#00f0ff',
+              magenta: '#ff00aa',
+              violet: '#7c3aed',
+              lime: '#ccff00',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: #06060a;
+      color: #e0e0e0;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    /* ---- Starfield Background ---- */
+    .starfield {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .star {
+      position: absolute;
+      background: #ffffff;
+      border-radius: 50%;
+      animation: twinkle var(--dur) ease-in-out infinite;
+      animation-delay: var(--delay);
+      opacity: var(--opacity);
+    }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: var(--opacity); transform: scale(1); }
+      50% { opacity: 0.1; transform: scale(0.5); }
+    }
+
+    /* ---- Shooting Stars ---- */
+    .shooting-star {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: #00f0ff;
+      border-radius: 50%;
+      box-shadow: 0 0 6px #00f0ff, 0 0 12px #00f0ff;
+      animation: shoot var(--shoot-dur) linear infinite;
+      animation-delay: var(--shoot-delay);
+      opacity: 0;
+    }
+
+    .shooting-star::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      right: 0;
+      width: 80px;
+      height: 1px;
+      background: linear-gradient(to left, transparent, #00f0ff);
+      transform: translateY(-50%);
+    }
+
+    @keyframes shoot {
+      0% { transform: translateX(0) translateY(0); opacity: 1; }
+      100% { transform: translateX(-400px) translateY(200px); opacity: 0; }
+    }
+
+    /* ---- Gradient Orbs ---- */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(120px);
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.08;
+      animation: orbFloat 20s ease-in-out infinite;
+    }
+
+    .orb-1 {
+      width: 600px;
+      height: 600px;
+      background: #00f0ff;
+      top: -200px;
+      right: -200px;
+      animation-delay: 0s;
+    }
+
+    .orb-2 {
+      width: 500px;
+      height: 500px;
+      background: #ff00aa;
+      bottom: -150px;
+      left: -150px;
+      animation-delay: -7s;
+    }
+
+    .orb-3 {
+      width: 400px;
+      height: 400px;
+      background: #7c3aed;
+      top: 40%;
+      left: 30%;
+      animation-delay: -14s;
+    }
+
+    @keyframes orbFloat {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      25% { transform: translate(30px, -40px) scale(1.05); }
+      50% { transform: translate(-20px, 20px) scale(0.95); }
+      75% { transform: translate(40px, 30px) scale(1.02); }
+    }
+
+    /* ---- Noise Texture ---- */
+    .noise {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      opacity: 0.025;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 200px;
+    }
+
+    /* ---- Scanlines ---- */
+    .scanlines {
+      position: fixed;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 0, 0, 0.03) 2px,
+        rgba(0, 0, 0, 0.03) 4px
+      );
+    }
+
+    /* ---- Navigation ---- */
+    .nav-glass {
+      background: rgba(6, 6, 10, 0.6);
+      backdrop-filter: blur(24px) saturate(1.2);
+      -webkit-backdrop-filter: blur(24px) saturate(1.2);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .nav-link {
+      position: relative;
+      color: rgba(255, 255, 255, 0.5);
+      transition: color 0.3s ease;
+    }
+
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 1px;
+      background: #00f0ff;
+      transition: width 0.3s ease;
+      box-shadow: 0 0 8px #00f0ff;
+    }
+
+    .nav-link:hover {
+      color: #fff;
+    }
+
+    .nav-link:hover::after {
+      width: 100%;
+    }
+
+    /* ---- Hero ---- */
+    .hero-section {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .hero-title {
+      font-family: 'Syncopate', sans-serif;
+      font-weight: 700;
+      font-size: clamp(3rem, 10vw, 9rem);
+      letter-spacing: -0.02em;
+      line-height: 0.9;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.6) 50%, #00f0ff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      position: relative;
+    }
+
+    .hero-title::before {
+      content: 'NEXUS';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #00f0ff 0%, #ff00aa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      opacity: 0;
+      filter: blur(20px);
+      animation: titleGlow 4s ease-in-out infinite;
+    }
+
+    @keyframes titleGlow {
+      0%, 100% { opacity: 0; }
+      50% { opacity: 0.3; }
+    }
+
+    .hero-subtitle {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(0.65rem, 1.5vw, 0.85rem);
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: rgba(0, 240, 255, 0.5);
+      margin-top: 1.5rem;
+    }
+
+    .hero-tagline {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 300;
+      font-size: clamp(0.9rem, 2vw, 1.15rem);
+      color: rgba(255, 255, 255, 0.35);
+      margin-top: 1rem;
+      letter-spacing: 0.05em;
+    }
+
+    /* ---- Visualizer Canvas ---- */
+    #visualizer {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ---- Scroll Indicator ---- */
+    .scroll-hint {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      animation: scrollPulse 2s ease-in-out infinite;
+    }
+
+    .scroll-hint span {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.25);
+    }
+
+    .scroll-hint .line {
+      width: 1px;
+      height: 40px;
+      background: linear-gradient(to bottom, rgba(0, 240, 255, 0.5), transparent);
+    }
+
+    @keyframes scrollPulse {
+      0%, 100% { opacity: 0.4; transform: translateX(-50%) translateY(0); }
+      50% { opacity: 1; transform: translateX(-50%) translateY(8px); }
+    }
+
+    /* ---- Section Styles ---- */
+    .section-title {
+      font-family: 'Syncopate', sans-serif;
+      font-weight: 700;
+      font-size: clamp(1.5rem, 4vw, 2.5rem);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #fff;
+    }
+
+    .section-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: rgba(0, 240, 255, 0.6);
+    }
+
+    /* ---- Mix Cards ---- */
+    .mix-card {
+      position: relative;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+      cursor: pointer;
+    }
+
+    .mix-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(0, 240, 255, 0.03), rgba(255, 0, 170, 0.03));
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    .mix-card:hover::before {
+      opacity: 1;
+    }
+
+    .mix-card:hover {
+      border-color: rgba(0, 240, 255, 0.15);
+      transform: translateY(-4px);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(0, 240, 255, 0.05);
+    }
+
+    .mix-card .card-art {
+      position: relative;
+      overflow: hidden;
+      aspect-ratio: 1;
+    }
+
+    .mix-card .card-art img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1), filter 0.5s ease;
+      filter: saturate(0.7) brightness(0.8);
+    }
+
+    .mix-card:hover .card-art img {
+      transform: scale(1.08);
+      filter: saturate(1) brightness(1);
+    }
+
+    .mix-card .play-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.4);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    .mix-card:hover .play-overlay {
+      opacity: 1;
+    }
+
+    .play-btn-circle {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: rgba(0, 240, 255, 0.15);
+      border: 1px solid rgba(0, 240, 255, 0.4);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+
+    .play-btn-circle:hover {
+      background: rgba(0, 240, 255, 0.3);
+      border-color: #00f0ff;
+      box-shadow: 0 0 30px rgba(0, 240, 255, 0.3);
+      transform: scale(1.1);
+    }
+
+    .mix-card .card-info {
+      padding: 20px;
+    }
+
+    .mix-card .mix-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 600;
+      font-size: 1rem;
+      color: #fff;
+      letter-spacing: -0.01em;
+      line-height: 1.3;
+    }
+
+    .mix-card .mix-meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      color: rgba(255, 255, 255, 0.35);
+      margin-top: 6px;
+      letter-spacing: 0.05em;
+    }
+
+    .mix-card .mix-tags {
+      display: flex;
+      gap: 6px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    .mix-card .tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      padding: 3px 10px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      color: rgba(255, 255, 255, 0.4);
+      letter-spacing: 0.05em;
+      transition: all 0.3s ease;
+    }
+
+    .mix-card:hover .tag {
+      border-color: rgba(0, 240, 255, 0.2);
+      color: rgba(0, 240, 255, 0.7);
+    }
+
+    /* ---- Featured Mix ---- */
+    .featured-mix {
+      position: relative;
+      border-radius: 24px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.015);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .featured-mix .featured-bg {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      filter: blur(60px) saturate(0.5);
+      opacity: 0.3;
+      transition: opacity 0.5s ease;
+    }
+
+    .featured-mix:hover .featured-bg {
+      opacity: 0.5;
+    }
+
+    .featured-mix .featured-content {
+      position: relative;
+      z-index: 1;
+      padding: 40px;
+    }
+
+    @media (min-width: 768px) {
+      .featured-mix .featured-content {
+        padding: 60px;
+      }
+    }
+
+    /* ---- Player Bar ---- */
+    .player-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: rgba(6, 6, 10, 0.85);
+      backdrop-filter: blur(32px) saturate(1.5);
+      -webkit-backdrop-filter: blur(32px) saturate(1.5);
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    .player-bar.hidden-player {
+      transform: translateY(100%);
+    }
+
+    .player-progress {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.05);
+      cursor: pointer;
+    }
+
+    .player-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #00f0ff, #ff00aa);
+      width: 0%;
+      transition: width 0.1s linear;
+      position: relative;
+    }
+
+    .player-progress-fill::after {
+      content: '';
+      position: absolute;
+      right: -6px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #00f0ff;
+      box-shadow: 0 0 12px rgba(0, 240, 255, 0.6);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .player-progress:hover .player-progress-fill::after {
+      opacity: 1;
+    }
+
+    .player-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      color: rgba(255, 255, 255, 0.5);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      flex-shrink: 0;
+    }
+
+    .player-btn:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .player-btn.play-pause {
+      width: 48px;
+      height: 48px;
+      background: rgba(0, 240, 255, 0.1);
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      color: #00f0ff;
+    }
+
+    .player-btn.play-pause:hover {
+      background: rgba(0, 240, 255, 0.2);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.2);
+    }
+
+    .volume-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 80px;
+      height: 3px;
+      border-radius: 2px;
+      background: rgba(255, 255, 255, 0.1);
+      outline: none;
+      cursor: pointer;
+    }
+
+    .volume-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #00f0ff;
+      box-shadow: 0 0 8px rgba(0, 240, 255, 0.5);
+      cursor: pointer;
+    }
+
+    .volume-slider::-moz-range-thumb {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #00f0ff;
+      border: none;
+      box-shadow: 0 0 8px rgba(0, 240, 255, 0.5);
+      cursor: pointer;
+    }
+
+    /* ---- Mini Visualizer in Player ---- */
+    .mini-viz {
+      width: 40px;
+      height: 24px;
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+    }
+
+    .mini-viz-bar {
+      flex: 1;
+      background: linear-gradient(to top, #00f0ff, #ff00aa);
+      border-radius: 1px;
+      transition: height 0.1s ease;
+      min-height: 2px;
+    }
+
+    /* ---- About Section ---- */
+    .about-image {
+      position: relative;
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .about-image::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(0, 240, 255, 0.1), rgba(255, 0, 170, 0.1));
+      mix-blend-mode: overlay;
+      pointer-events: none;
+    }
+
+    .about-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: saturate(0.6) contrast(1.1);
+      transition: filter 0.5s ease;
+    }
+
+    .about-image:hover img {
+      filter: saturate(0.8) contrast(1.1);
+    }
+
+    /* ---- Stats ---- */
+    .stat-item {
+      text-align: center;
+      padding: 24px;
+      background: rgba(255, 255, 255, 0.015);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 16px;
+      transition: all 0.4s ease;
+    }
+
+    .stat-item:hover {
+      border-color: rgba(0, 240, 255, 0.1);
+      background: rgba(0, 240, 255, 0.02);
+    }
+
+    .stat-number {
+      font-family: 'Syncopate', sans-serif;
+      font-weight: 700;
+      font-size: 2rem;
+      background: linear-gradient(135deg, #00f0ff, #ff00aa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .stat-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.35);
+      margin-top: 8px;
+    }
+
+    /* ---- Social Links ---- */
+    .social-link {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      color: rgba(255, 255, 255, 0.4);
+      transition: all 0.3s ease;
+    }
+
+    .social-link:hover {
+      background: rgba(0, 240, 255, 0.08);
+      border-color: rgba(0, 240, 255, 0.25);
+      color: #00f0ff;
+      transform: translateY(-2px);
+    }
+
+    /* ---- Footer ---- */
+    .footer {
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+      background: rgba(6, 6, 10, 0.8);
+    }
+
+    /* ---- Scroll Reveal ---- */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.8s cubic-bezier(0.23, 1, 0.32, 1), transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ---- Custom Scrollbar ---- */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #06060a;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(0, 240, 255, 0.2);
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 240, 255, 0.4);
+    }
+
+    /* ---- Filter Buttons ---- */
+    .filter-btn {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 8px 20px;
+      border-radius: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: transparent;
+      color: rgba(255, 255, 255, 0.4);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .filter-btn:hover {
+      border-color: rgba(0, 240, 255, 0.3);
+      color: rgba(0, 240, 255, 0.8);
+    }
+
+    .filter-btn.active {
+      background: rgba(0, 240, 255, 0.08);
+      border-color: rgba(0, 240, 255, 0.4);
+      color: #00f0ff;
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.1);
+    }
+
+    /* ---- Now Playing Animation ---- */
+    @keyframes nowPlaying {
+      0% { transform: scaleY(0.3); }
+      50% { transform: scaleY(1); }
+      100% { transform: scaleY(0.3); }
+    }
+
+    .now-playing-bar {
+      animation: nowPlaying 0.6s ease-in-out infinite;
+    }
+
+    /* ---- Track Waveform Preview ---- */
+    .waveform-preview {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      height: 24px;
+    }
+
+    .waveform-bar {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 1px;
+      transition: background 0.3s ease;
+    }
+
+    .waveform-bar.active {
+      background: linear-gradient(to top, #00f0ff, #ff00aa);
+    }
+
+    /* ---- Glow Text Effect ---- */
+    .glow-text {
+      text-shadow: 0 0 40px rgba(0, 240, 255, 0.3);
+    }
+
+    /* ---- Divider Line ---- */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+    }
+
+    /* ---- Mobile Adjustments ---- */
+    @media (max-width: 640px) {
+      .player-bar .player-controls-center {
+        gap: 8px !important;
+      }
+      
+      .player-bar .track-info {
+        max-width: 120px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background Effects -->
+  <div class="starfield" id="starfield"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <div class="noise"></div>
+  <div class="scanlines"></div>
+
+  <!-- Navigation -->
+  <nav class="nav-glass fixed top-0 left-0 right-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="#" class="font-display font-bold text-lg tracking-widest text-white">
+        NEXUS
+        <span class="inline-block w-1.5 h-1.5 rounded-full bg-neon-cyan ml-1 animate-pulse"></span>
+      </a>
+      <div class="hidden md:flex items-center gap-10">
+        <a href="#mixes" class="nav-link text-xs font-mono tracking-widest">MIXES</a>
+        <a href="#about" class="nav-link text-xs font-mono tracking-widest">ABOUT</a>
+        <a href="#contact" class="nav-link text-xs font-mono tracking-widest">CONTACT</a>
+      </div>
+      <div class="flex items-center gap-4">
+        <a href="https://soundcloud.com" target="_blank" class="social-link w-9 h-9 rounded-lg">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M1.175 12.225c-.051 0-.094.046-.101.1l-.233 2.154.233 2.105c.007.058.05.098.101.098.05 0 .09-.04.099-.098l.255-2.105-.27-2.154c-.009-.06-.052-.1-.084-.1zm-.899.828c-.06 0-.091.037-.104.094L0 14.479l.165 1.308c.014.057.045.094.09.094s.089-.037.099-.094l.195-1.308-.21-1.352c-.01-.057-.044-.094-.063-.094zm1.83-1.229c-.061 0-.12.045-.12.104l-.21 2.563.225 2.458c0 .06.045.104.106.104.061 0 .12-.045.12-.104l.24-2.474-.255-2.547c0-.06-.045-.104-.106-.104zm.945-.089c-.075 0-.135.06-.15.135l-.193 2.64.21 2.544c.016.077.075.138.149.138.075 0 .135-.061.15-.138l.24-2.544-.24-2.64c-.015-.075-.06-.135-.166-.135zm.93-.069c-.09 0-.149.075-.165.165l-.18 2.7.195 2.52c.016.09.075.165.165.165.09 0 .165-.075.18-.165l.21-2.52-.21-2.7c-.015-.09-.075-.165-.195-.165zm.915-.09c-.09 0-.165.09-.18.18l-.165 2.79.18 2.46c.015.105.09.18.18.18.105 0 .18-.09.195-.18l.195-2.46-.195-2.79c-.015-.09-.09-.18-.21-.18zm.93-.045c-.105 0-.195.105-.21.21l-.15 2.835.165 2.385c.015.105.105.21.21.21.12 0 .21-.105.225-.21l.18-2.385-.18-2.835c-.015-.105-.105-.21-.24-.21zm.96-.015c-.12 0-.21.12-.225.24l-.135 2.88.15 2.34c.015.12.105.24.225.24.135 0 .24-.12.255-.24l.165-2.34-.165-2.88c-.015-.12-.12-.24-.27-.24zm.99 0c-.135 0-.24.135-.255.255l-.12 2.88.135 2.31c.015.135.12.255.255.255.15 0 .255-.12.27-.255l.15-2.31-.15-2.88c-.015-.12-.12-.255-.285-.255zm1.005.045c-.15 0-.255.15-.27.285l-.105 2.835.12 2.28c.015.15.12.285.27.285.165 0 .285-.135.3-.285l.135-2.28-.135-2.835c-.015-.135-.135-.285-.315-.285zm1.02.09c-.165 0-.285.165-.3.315l-.09 2.745.105 2.25c.015.165.135.315.3.315.18 0 .315-.15.33-.315l.12-2.25-.12-2.745c-.015-.15-.15-.315-.345-.315zm1.035.135c-.18 0-.315.18-.33.345l-.075 2.67.09 2.205c.015.18.15.345.33.345.195 0 .345-.165.36-.345l.105-2.205-.105-2.67c-.015-.165-.165-.345-.375-.345zm1.05.165c-.195 0-.345.195-.36.375l-.06 2.595.075 2.16c.015.195.165.375.36.375.21 0 .375-.18.39-.375l.09-2.16-.09-2.595c-.015-.18-.18-.375-.405-.375zm1.065.195c-.21 0-.375.21-.39.405l-.045 2.52.06 2.115c.015.21.18.405.39.405.225 0 .405-.195.42-.405l.075-2.115-.075-2.52c-.015-.195-.195-.405-.435-.405zm1.08.225c-.225 0-.405.225-.42.435l-.03 2.445.045 2.07c.015.225.195.435.42.435.24 0 .435-.21.45-.435l.06-2.07-.06-2.445c-.015-.21-.21-.435-.465-.435zm1.095.255c-.24 0-.435.24-.45.465l-.015 2.37.03 2.025c.015.24.21.465.45.465.255 0 .465-.225.48-.465l.045-2.025-.045-2.37c-.015-.225-.225-.465-.495-.465zm1.11.27c-.255 0-.465.255-.48.495l0 2.295.015 1.98c.015.255.225.495.48.495.27 0 .495-.24.51-.495l.03-1.98-.03-2.295c-.015-.24-.24-.495-.525-.495zm1.125.3c-.27 0-.495.27-.51.525l.015 2.22.015 1.935c.015.27.24.525.51.525.285 0 .525-.255.54-.525l.015-1.935-.015-2.22c-.015-.255-.255-.525-.57-.525zm1.14.33c-.285 0-.525.285-.54.555l.03 2.145.015 1.89c.015.285.255.555.54.555.3 0 .555-.27.57-.555l0-1.89-.03-2.145c-.015-.27-.27-.555-.585-.555zm1.155.345c-.3 0-.555.3-.57.585l.045 2.07.015 1.845c.015.3.27.585.57.585.315 0 .585-.285.6-.585l-.015-1.845-.045-2.07c-.015-.285-.285-.585-.6-.585zm1.17.375c-.315 0-.585.315-.6.615l.06 1.995.015 1.8c.015.315.285.615.6.615.33 0 .615-.3.63-.615l-.03-1.8-.06-1.995c-.015-.3-.3-.615-.615-.615z"/>
+          </svg>
+        </a>
+        <a href="https://mixcloud.com" target="_blank" class="social-link w-9 h-9 rounded-lg">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M2.462 8.596l1.372 6.49h.319l1.372-6.49h2.462v9.808H6.881V10.14h-.04L5.35 16.404H3.65L2.16 10.14h-.04v8.264H0V8.596h2.462zm6.35 0h2.462v9.808H8.812V8.596zm3.653 0h2.462v7.346h2.42v2.462h-4.882V8.596zm6.35 0h2.462v7.346h2.42v2.462h-4.882V8.596z"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero-section relative z-10">
+    <canvas id="visualizer" width="900" height="900"></canvas>
+    <div class="relative z-10 text-center px-6">
+      <p class="hero-subtitle mb-4">Progressive Trance / Uplifting / Psy</p>
+      <h1 class="hero-title">NEXUS</h1>
+      <p class="hero-tagline">Sonic journeys through the infinite</p>
+      <div class="mt-10 flex items-center justify-center gap-4">
+        <button onclick="scrollToMixes()" class="group relative px-8 py-3.5 rounded-full overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-r from-neon-cyan/20 to-neon-magenta/20 border border-white/10 rounded-full group-hover:border-neon-cyan/30 transition-all duration-500"></div>
+          <span class="relative font-mono text-xs tracking-[0.25em] uppercase text-white/70 group-hover:text-white transition-colors">Explore Mixes</span>
+        </button>
+      </div>
+    </div>
+    <div class="scroll-hint">
+      <span>Scroll</span>
+      <div class="line"></div>
+    </div>
+  </section>
+
+  <!-- Mixes Section -->
+  <section id="mixes" class="relative z-10 py-24 md:py-32">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="reveal mb-16">
+        <p class="section-label mb-3">Collection</p>
+        <h2 class="section-title">Mix Sets</h2>
+        <p class="mt-4 text-white/30 max-w-lg font-light text-sm leading-relaxed">
+          Curated sonic experiences spanning progressive trance, uplifting anthems, 
+          and psytrance explorations. Each set is a journey.
+        </p>
+      </div>
+
+      <!-- Filters -->
+      <div class="reveal flex flex-wrap gap-3 mb-12">
+        <button class="filter-btn active" onclick="filterMixes('all', this)">All</button>
+        <button class="filter-btn" onclick="filterMixes('progressive', this)">Progressive</button>
+        <button class="filter-btn" onclick="filterMixes('uplifting', this)">Uplifting</button>
+        <button class="filter-btn" onclick="filterMixes('psy', this)">Psytrance</button>
+        <button class="filter-btn" onclick="filterMixes('ambient', this)">Ambient</button>
+      </div>
+
+      <!-- Mix Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5" id="mixGrid">
+
+        <!-- Mix 1 -->
+        <div class="mix-card reveal" data-genre="progressive" onclick="playMix(0)">
+          <div class="card-art">
+            <img src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop&q=80" alt="Cosmic Drift" loading="lazy">
+            <div class="play-overlay">
+              <div class="play-btn-circle">
+                <svg class="w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+          <div class="card-info">
+            <h3 class="mix-title">Cosmic Drift</h3>
+            <p class="mix-meta">Episode 042 &mdash; 1:28:00</p>
+            <div class="mix-tags">
+              <span class="tag">Progressive</span>
+              <span class="tag">Melodic</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mix 2 -->
+        <div class="mix-card reveal" data-genre="uplifting" onclick="playMix(1)">
+          <div class="card-art">
+            <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop&q=80" alt="Neon Horizon" loading="lazy">
+            <div class="play-overlay">
+              <div class="play-btn-circle">
+                <svg class="w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+          <div class="card-info">
+            <h3 class="mix-title">Neon Horizon</h3>
+            <p class="mix-meta">Episode 041 &mdash; 1:15:00</p>
+            <div class="mix-tags">
+              <span class="tag">Uplifting</span>
+              <span class="tag">Vocal</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mix 3 -->
+        <div class="mix-card reveal" data-genre="psy" onclick="playMix(2)">
+          <div class="card-art">
+            <img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop&q=80" alt="Deep Frequency" loading="lazy">
+            <div class="play-overlay">
+              <div class="play-btn-circle">
+                <svg class="w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+          <div class="card-info">
+            <h3 class="mix-title">Deep Frequency</h3>
+            <p class="mix-meta">Episode 040 &mdash; 2:04:00</p>
+            <div class="mix-tags">
+              <span class="tag">Psytrance</span>
+              <span class="tag">Dark</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mix 4 -->
+        <div class="mix-card reveal" data-genre="progressive" onclick="playMix(3)">
+          <div class="card-art">
+            <img src="https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=400&h=400&fit=crop&q=80" alt="Solar Winds" loading="lazy">
+            <div class="play-overlay">
+              <div class="play-btn-circle">
+                <svg class="w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+          <div class="card-info">
+            <h3 class="mix-title">Solar Winds</h3>
+            <p class="mix-meta">Episode 039 &mdash; 1:32:00</p>
+            <div class="mix-tags">
+              <span class="tag">Progressive</span>
+              <span class="tag">Tech</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mix 5 -->
+        <div class="mix-card reveal" data-genre="ambient" onclick="playMix(4)">
+          <div class="card-art">
+            <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400&h=400&fit=crop&q=80" alt="Ethereal Dreams" loading="lazy">
+            <div class="play-overlay">
+              <div class="play-btn-circle">
+                <svg class="w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+          <div class="card-info">
+            <h3 class="mix-title">Ethereal Dreams</h3>
+            <p class="mix-meta">Episode 038 &mdash; 1:45:00</p>
+            <div class="mix-tags">
+              <span class="tag">Ambient</span>
+              <span class="tag">Chill</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mix 6 -->
+        <div class="mix-card reveal" data-genre="uplifting" onclick="playMix(5)">
+          <div class="card-art">
+            <img src="https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop&q=80" alt="Stellar Ascension" loading="lazy">
+            <div class="play-overlay">
+              <div class="play-btn-circle">
+                <svg class="w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+          <div class="card-info">
+            <h3 class="mix-title">Stellar Ascension</h3>
+            <p class="mix-meta">Episode 037 &mdash; 1:20:00</p>
+            <div class="mix-tags">
+              <span class="tag">Uplifting</span>
+              <span class="tag">Euphoric</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mix 7 -->
+        <div class="mix-card reveal" data-genre="psy" onclick="playMix(6)">
+          <div class="card-art">
+            <img src="https://images.unsplash.com/photo-1506157786151-b8491531f063?w=400&h=400&fit=crop&q=80" alt="Quantum Flux" loading="lazy">
+            <div class="play-overlay">
+              <div class="play-btn-circle">
+                <svg class="w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+          <div class="card-info">
+            <h3 class="mix-title">Quantum Flux</h3>
+            <p class="mix-meta">Episode 036 &mdash; 1:55:00</p>
+            <div class="mix-tags">
+              <span class="tag">Psytrance</span>
+              <span class="tag">Full On</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mix 8 -->
+        <div class="mix-card reveal" data-genre="progressive" onclick="playMix(7)">
+          <div class="card-art">
+            <img src="https://images.unsplash.com/photo-1571330735066-03aaa9429d89?w=400&h=400&fit=crop&q=80" alt="Midnight Pulse" loading="lazy">
+            <div class="play-overlay">
+              <div class="play-btn-circle">
+                <svg class="w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+          <div class="card-info">
+            <h3 class="mix-title">Midnight Pulse</h3>
+            <p class="mix-meta">Episode 035 &mdash; 1:42:00</p>
+            <div class="mix-tags">
+              <span class="tag">Progressive</span>
+              <span class="tag">Deep</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Divider -->
+  <div class="max-w-4xl mx-auto px-6">
+    <div class="divider"></div>
+  </div>
+
+  <!-- About Section -->
+  <section id="about" class="relative z-10 py-24 md:py-32">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        <div class="reveal">
+          <p class="section-label mb-3">The Artist</p>
+          <h2 class="section-title mb-6">NEXUS</h2>
+          <div class="space-y-5 text-white/40 text-sm leading-[1.8] font-light">
+            <p>
+              Born from the underground rave scenes of Berlin and Amsterdam, NEXUS has spent over a decade 
+              crafting immersive sonic experiences that blur the line between consciousness and transcendence.
+            </p>
+            <p>
+              Drawing inspiration from the cosmic vastness above and the pulsing energy of the dancefloor below, 
+              each mix is a carefully constructed journey through layered melodies, driving basslines, and 
+              ethereal atmospheres.
+            </p>
+            <p>
+              From intimate warehouse gatherings to festival main stages, the mission remains the same: 
+              to create moments where time dissolves and music becomes the only reality.
+            </p>
+          </div>
+          <div class="mt-10 flex gap-3">
+            <a href="#" class="social-link">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+              </svg>
+            </a>
+            <a href="#" class="social-link">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+              </svg>
+            </a>
+            <a href="#" class="social-link">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.162-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738.098.119.112.224.083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.631-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12.017 24c6.624 0 11.99-5.367 11.99-11.988C24.007 5.367 18.641.001 12.017.001z"/>
+              </svg>
+            </a>
+            <a href="#" class="social-link">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+        <div class="reveal about-image aspect-[4/5] lg:aspect-auto lg:h-[520px]">
+          <img src="https://images.unsplash.com/photo-1571266028243-3716f02d2d2e?w=600&h=800&fit=crop&q=80" alt="NEXUS performing" loading="lazy">
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-20">
+        <div class="stat-item reveal">
+          <div class="stat-number">42</div>
+          <div class="stat-label">Mix Episodes</div>
+        </div>
+        <div class="stat-item reveal">
+          <div class="stat-number">12</div>
+          <div class="stat-label">Years Active</div>
+        </div>
+        <div class="stat-item reveal">
+          <div class="stat-number">2.4M</div>
+          <div class="stat-label">Total Plays</div>
+        </div>
+        <div class="stat-item reveal">
+          <div class="stat-number">89</div>
+          <div class="stat-label">Countries</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Divider -->
+  <div class="max-w-4xl mx-auto px-6">
+    <div class="divider"></div>
+  </div>
+
+  <!-- Contact / Footer -->
+  <section id="contact" class="relative z-10 py-24 md:py-32">
+    <div class="max-w-3xl mx-auto px-6 text-center reveal">
+      <p class="section-label mb-3">Connect</p>
+      <h2 class="section-title mb-6">Get In Touch</h2>
+      <p class="text-white/30 text-sm font-light leading-relaxed max-w-lg mx-auto mb-10">
+        Bookings, collaborations, or just to say hello. Reach out through any of the channels below.
+      </p>
+      <div class="flex flex-wrap justify-center gap-4">
+        <a href="mailto:hello@nexus.dj" class="group relative px-8 py-3.5 rounded-full overflow-hidden inline-flex items-center gap-2">
+          <div class="absolute inset-0 bg-gradient-to-r from-neon-cyan/10 to-neon-magenta/10 border border-white/10 rounded-full group-hover:border-neon-cyan/25 transition-all duration-500"></div>
+          <svg class="w-4 h-4 relative text-white/50 group-hover:text-neon-cyan transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+          </svg>
+          <span class="relative font-mono text-xs tracking-[0.15em] uppercase text-white/60 group-hover:text-white transition-colors">hello@nexus.dj</span>
+        </a>
+        <a href="#" class="group relative px-8 py-3.5 rounded-full overflow-hidden inline-flex items-center gap-2">
+          <div class="absolute inset-0 bg-gradient-to-r from-neon-magenta/10 to-neon-cyan/10 border border-white/10 rounded-full group-hover:border-neon-magenta/25 transition-all duration-500"></div>
+          <svg class="w-4 h-4 relative text-white/50 group-hover:text-neon-magenta transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+          </svg>
+          <span class="relative font-mono text-xs tracking-[0.15em] uppercase text-white/60 group-hover:text-white transition-colors">Bookings</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer relative z-10 py-10">
+    <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2">
+        <span class="font-display font-bold text-sm tracking-widest text-white/60">NEXUS</span>
+        <span class="text-white/15 text-xs">|</span>
+        <span class="font-mono text-xs text-white/25 tracking-wider">TRANCE DJ</span>
+      </div>
+      <p class="font-mono text-xs text-white/20 tracking-wider"> 2024 NEXUS. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- Spacer for fixed player -->
+  <div style="height: 100px;"></div>
+
+  <!-- Fixed Player Bar -->
+  <div class="player-bar" id="playerBar">
+    <!-- Progress Bar -->
+    <div class="player-progress" id="progressBar" onclick="seek(event)">
+      <div class="player-progress-fill" id="progressFill"></div>
+    </div>
+    
+    <div class="max-w-7xl mx-auto px-4 md:px-6 py-3 flex items-center justify-between gap-3">
+      <!-- Track Info -->
+      <div class="flex items-center gap-3 min-w-0 track-info">
+        <div class="w-11 h-11 rounded-xl overflow-hidden flex-shrink-0 border border-white/5">
+          <img id="playerArt" src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=100&h=100&fit=crop&q=80" alt="Now Playing" class="w-full h-full object-cover">
+        </div>
+        <div class="min-w-0 hidden sm:block">
+          <div id="playerTitle" class="text-white text-sm font-medium truncate tracking-tight">Select a mix to play</div>
+          <div id="playerMeta" class="text-white/30 text-xs font-mono tracking-wider mt-0.5">--:-- / --:--</div>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="flex items-center gap-2 player-controls-center">
+        <button class="player-btn" onclick="prevMix()" title="Previous">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+          </svg>
+        </button>
+        <button class="player-btn play-pause" onclick="togglePlay()" id="playPauseBtn" title="Play/Pause">
+          <svg class="w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 24 24" id="playIcon">
+            <path d="M8 5v14l11-7z"/>
+          </svg>
+          <svg class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 24 24" id="pauseIcon">
+            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+          </svg>
+        </button>
+        <button class="player-btn" onclick="nextMix()" title="Next">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Volume & Mini Viz -->
+      <div class="flex items-center gap-3">
+        <div class="mini-viz hidden md:flex" id="miniViz">
+          <div class="mini-viz-bar" style="height: 20%"></div>
+          <div class="mini-viz-bar" style="height: 40%"></div>
+          <div class="mini-viz-bar" style="height: 60%"></div>
+          <div class="mini-viz-bar" style="height: 30%"></div>
+          <div class="mini-viz-bar" style="height: 50%"></div>
+        </div>
+        <svg class="w-4 h-4 text-white/30 hidden sm:block" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+        </svg>
+        <input type="range" class="volume-slider hidden sm:block" min="0" max="100" value="70" oninput="setVolume(this.value)">
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ==================== STARFIELD ====================
+    function createStarfield() {
+      const container = document.getElementById('starfield');
+      const count = 150;
+      
+      for (let i = 0; i < count; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        const size = Math.random() * 2 + 0.5;
+        star.style.width = size + 'px';
+        star.style.height = size + 'px';
+        star.style.left = Math.random() * 100 + '%';
+        star.style.top = Math.random() * 100 + '%';
+        star.style.setProperty('--dur', (Math.random() * 4 + 2) + 's');
+        star.style.setProperty('--delay', (Math.random() * 5) + 's');
+        star.style.setProperty('--opacity', (Math.random() * 0.7 + 0.1));
+        container.appendChild(star);
+      }
+
+      // Shooting stars
+      for (let i = 0; i < 3; i++) {
+        const shooting = document.createElement('div');
+        shooting.className = 'shooting-star';
+        shooting.style.top = Math.random() * 50 + '%';
+        shooting.style.left = (50 + Math.random() * 50) + '%';
+        shooting.style.setProperty('--shoot-dur', (Math.random() * 3 + 4) + 's');
+        shooting.style.setProperty('--shoot-delay', (Math.random() * 10) + 's');
+        container.appendChild(shooting);
+      }
+    }
+    createStarfield();
+
+    // ==================== MIX DATA ====================
+    const mixes = [
+      {
+        title: 'Cosmic Drift',
+        episode: 'Episode 042',
+        duration: '1:28:00',
+        genre: 'progressive',
+        art: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=100&h=100&fit=crop&q=80',
+        fullArt: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop&q=80'
+      },
+      {
+        title: 'Neon Horizon',
+        episode: 'Episode 041',
+        duration: '1:15:00',
+        genre: 'uplifting',
+        art: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=100&h=100&fit=crop&q=80',
+        fullArt: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop&q=80'
+      },
+      {
+        title: 'Deep Frequency',
+        episode: 'Episode 040',
+        duration: '2:04:00',
+        genre: 'psy',
+        art: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=100&h=100&fit=crop&q=80',
+        fullArt: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop&q=80'
+      },
+      {
+        title: 'Solar Winds',
+        episode: 'Episode 039',
+        duration: '1:32:00',
+        genre: 'progressive',
+        art: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=100&h=100&fit=crop&q=80',
+        fullArt: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=400&h=400&fit=crop&q=80'
+      },
+      {
+        title: 'Ethereal Dreams',
+        episode: 'Episode 038',
+        duration: '1:45:00',
+        genre: 'ambient',
+        art: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=100&h=100&fit=crop&q=80',
+        fullArt: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400&h=400&fit=crop&q=80'
+      },
+      {
+        title: 'Stellar Ascension',
+        episode: 'Episode 037',
+        duration: '1:20:00',
+        genre: 'uplifting',
+        art: 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=100&h=100&fit=crop&q=80',
+        fullArt: 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop&q=80'
+      },
+      {
+        title: 'Quantum Flux',
+        episode: 'Episode 036',
+        duration: '1:55:00',
+        genre: 'psy',
+        art: 'https://images.unsplash.com/photo-1506157786151-b8491531f063?w=100&h=100&fit=crop&q=80',
+        fullArt: 'https://images.unsplash.com/photo-1506157786151-b8491531f063?w=400&h=400&fit=crop&q=80'
+      },
+      {
+        title: 'Midnight Pulse',
+        episode: 'Episode 035',
+        duration: '1:42:00',
+        genre: 'progressive',
+        art: 'https://images.unsplash.com/photo-1571330735066-03aaa9429d89?w=100&h=100&fit=crop&q=80',
+        fullArt: 'https://images.unsplash.com/photo-1571330735066-03aaa9429d89?w=400&h=400&fit=crop&q=80'
+      }
+    ];
+
+    let currentMixIndex = -1;
+    let isPlaying = false;
+    let progress = 0;
+    let progressInterval = null;
+    let audioContext = null;
+    let analyser = null;
+    let dataArray = null;
+    let animationId = null;
+    let currentDuration = 5280; // seconds (1:28:00)
+
+    // ==================== AUDIO CONTEXT & VISUALIZER ====================
+    function initAudioContext() {
+      if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        analyser = audioContext.createAnalyser();
+        analyser.fftSize = 256;
+        analyser.smoothingTimeConstant = 0.85;
+        dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+        // Create oscillator for demo
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(analyser);
+        analyser.connect(audioContext.destination);
+        oscillator.type = 'sine';
+        oscillator.frequency.value = 0;
+        gainNode.gain.value = 0;
+        oscillator.start();
+      }
+    }
+
+    // ==================== CANVAS VISUALIZER ====================
+    const canvas = document.getElementById('visualizer');
+    const ctx = canvas.getContext('2d');
+    let time = 0;
+    let particles = [];
+
+    // Create particles
+    for (let i = 0; i < 80; i++) {
+      particles.push({
+        angle: (Math.PI * 2 * i) / 80,
+        radius: 120 + Math.random() * 180,
+        speed: 0.002 + Math.random() * 0.004,
+        offset: Math.random() * Math.PI * 2,
+        size: 1 + Math.random() * 2
+      });
+    }
+
+    function drawVisualizer() {
+      const w = canvas.width;
+      const h = canvas.height;
+      const cx = w / 2;
+      const cy = h / 2;
+
+      ctx.clearRect(0, 0, w, h);
+
+      let avgFreq = 0;
+      if (analyser && isPlaying) {
+        analyser.getByteFrequencyData(dataArray);
+        for (let i = 0; i < dataArray.length; i++) {
+          avgFreq += dataArray[i];
+        }
+        avgFreq /= dataArray.length;
+      }
+
+      const intensity = isPlaying ? (avgFreq / 255) * 0.8 + 0.2 : 0.15;
+
+      // Draw concentric rings
+      const ringCount = 5;
+      for (let r = 0; r < ringCount; r++) {
+        const baseRadius = 80 + r * 55;
+        const ringIntensity = intensity * (1 - r * 0.12);
+
+        ctx.beginPath();
+        for (let i = 0; i <= 360; i += 2) {
+          const rad = (i * Math.PI) / 180;
+          const wave1 = Math.sin(rad * 6 + time * 1.5 + r) * 15 * ringIntensity;
+          const wave2 = Math.cos(rad * 4 - time * 1.2 + r * 0.5) * 10 * ringIntensity;
+          const wave3 = Math.sin(rad * 8 + time * 2) * 8 * ringIntensity * (avgFreq / 255);
+          const radius = baseRadius + wave1 + wave2 + wave3;
+
+          const x = cx + Math.cos(rad) * radius;
+          const y = cy + Math.sin(rad) * radius;
+
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+
+        const hue = (time * 15 + r * 40) % 360;
+        ctx.strokeStyle = `hsla(${hue}, 80%, 60%, ${0.15 + ringIntensity * 0.3})`;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
+
+      // Draw particles
+      particles.forEach((p, i) => {
+        const currentAngle = p.angle + time * p.speed + p.offset;
+        const pulse = isPlaying ? Math.sin(time * 3 + i) * 20 * (avgFreq / 255) : 0;
+        const radius = p.radius + pulse;
+
+        const x = cx + Math.cos(currentAngle) * radius;
+        const y = cy + Math.sin(currentAngle) * radius;
+
+        const hue = (time * 20 + i * 4.5) % 360;
+        const alpha = 0.3 + intensity * 0.5;
+
+        ctx.beginPath();
+        ctx.arc(x, y, p.size * (0.8 + intensity * 0.5), 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${hue}, 90%, 70%, ${alpha})`;
+        ctx.fill();
+      });
+
+      // Center glow
+      const glowRadius = 40 + intensity * 60;
+      const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, glowRadius);
+      glow.addColorStop(0, `hsla(${time * 20 % 360}, 80%, 60%, ${0.1 + intensity * 0.15})`);
+      glow.addColorStop(1, 'transparent');
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(cx, cy, glowRadius, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Frequency bars around the edge
+      if (analyser && isPlaying) {
+        analyser.getByteFrequencyData(dataArray);
+        const barCount = 64;
+        const barRadius = 280;
+
+        for (let i = 0; i < barCount; i++) {
+          const angle = (i / barCount) * Math.PI * 2 - Math.PI / 2;
+          const value = dataArray[i % dataArray.length];
+          const barHeight = (value / 255) * 60;
+
+          const x1 = cx + Math.cos(angle) * barRadius;
+          const y1 = cy + Math.sin(angle) * barRadius;
+          const x2 = cx + Math.cos(angle) * (barRadius + barHeight);
+          const y2 = cy + Math.sin(angle) * (barRadius + barHeight);
+
+          const hue = (time * 25 + i * 5.6) % 360;
+          ctx.beginPath();
+          ctx.moveTo(x1, y1);
+          ctx.lineTo(x2, y2);
+          ctx.strokeStyle = `hsla(${hue}, 90%, 65%, ${0.4 + (value / 255) * 0.4})`;
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+      }
+
+      time += 0.008;
+      animationId = requestAnimationFrame(drawVisualizer);
+    }
+
+    drawVisualizer();
+
+    // ==================== MINI VISUALIZER ====================
+    function updateMiniViz() {
+      if (!isPlaying) {
+        document.querySelectorAll('.mini-viz-bar').forEach(bar => {
+          bar.style.height = '10%';
+        });
+        return;
+      }
+
+      if (analyser) {
+        analyser.getByteFrequencyData(dataArray);
+        const bars = document.querySelectorAll('.mini-viz-bar');
+        const step = Math.floor(dataArray.length / bars.length);
+
+        bars.forEach((bar, i) => {
+          const value = dataArray[i * step] || 0;
+          const height = Math.max(10, (value / 255) * 100);
+          bar.style.height = height + '%';
+        });
+      }
+
+      requestAnimationFrame(updateMiniViz);
+    }
+
+    // ==================== PLAYER FUNCTIONS ====================
+    function playMix(index) {
+      initAudioContext();
+      currentMixIndex = index;
+      const mix = mixes[index];
+
+      document.getElementById('playerTitle').textContent = mix.title;
+      document.getElementById('playerArt').src = mix.art;
+
+      // Parse duration
+      const parts = mix.duration.split(':');
+      if (parts.length === 3) {
+        currentDuration = parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseInt(parts[2]);
+      } else {
+        currentDuration = parseInt(parts[0]) * 60 + parseInt(parts[1]);
+      }
+
+      isPlaying = true;
+      progress = 0;
+      updatePlayPauseIcon();
+      startProgress();
+      updateMiniViz();
+
+      // Resume audio context if suspended
+      if (audioContext && audioContext.state === 'suspended') {
+        audioContext.resume();
+      }
+    }
+
+    function togglePlay() {
+      if (currentMixIndex === -1) {
+        playMix(0);
+        return;
+      }
+
+      initAudioContext();
+      isPlaying = !isPlaying;
+      updatePlayPauseIcon();
+
+      if (isPlaying) {
+        startProgress();
+        updateMiniViz();
+        if (audioContext && audioContext.state === 'suspended') {
+          audioContext.resume();
+        }
+      } else {
+        stopProgress();
+      }
+    }
+
+    function updatePlayPauseIcon() {
+      const playIcon = document.getElementById('playIcon');
+      const pauseIcon = document.getElementById('pauseIcon');
+      if (isPlaying) {
+        playIcon.classList.add('hidden');
+        pauseIcon.classList.remove('hidden');
+      } else {
+        playIcon.classList.remove('hidden');
+        pauseIcon.classList.add('hidden');
+      }
+    }
+
+    function startProgress() {
+      stopProgress();
+      progressInterval = setInterval(() => {
+        progress += 1;
+        if (progress >= currentDuration) {
+          progress = 0;
+          nextMix();
+        }
+        updateProgressUI();
+      }, 1000);
+    }
+
+    function stopProgress() {
+      if (progressInterval) {
+        clearInterval(progressInterval);
+        progressInterval = null;
+      }
+    }
+
+    function updateProgressUI() {
+      const percent = (progress / currentDuration) * 100;
+      document.getElementById('progressFill').style.width = percent + '%';
+
+      const current = formatTime(progress);
+      const total = formatTime(currentDuration);
+      document.getElementById('playerMeta').textContent = `${current} / ${total}`;
+    }
+
+    function formatTime(seconds) {
+      const h = Math.floor(seconds / 3600);
+      const m = Math.floor((seconds % 3600) / 60);
+      const s = Math.floor(seconds % 60);
+      if (h > 0) {
+        return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+      }
+      return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }
+
+    function seek(event) {
+      if (currentMixIndex === -1) return;
+      const rect = event.currentTarget.getBoundingClientRect();
+      const percent = (event.clientX - rect.left) / rect.width;
+      progress = Math.floor(percent * currentDuration);
+      updateProgressUI();
+    }
+
+    function nextMix() {
+      let next = currentMixIndex + 1;
+      if (next >= mixes.length) next = 0;
+      playMix(next);
+    }
+
+    function prevMix() {
+      let prev = currentMixIndex - 1;
+      if (prev < 0) prev = mixes.length - 1;
+      playMix(prev);
+    }
+
+    function setVolume(value) {
+      // Volume control
+    }
+
+    // ==================== FILTER MIXES ====================
+    function filterMixes(genre, btn) {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const cards = document.querySelectorAll('.mix-card');
+      cards.forEach(card => {
+        if (genre === 'all' || card.dataset.genre === genre) {
+          card.style.display = '';
+          setTimeout(() => {
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+          }, 50);
+        } else {
+          card.style.opacity = '0';
+          card.style.transform = 'translateY(20px)';
+          setTimeout(() => {
+            card.style.display = 'none';
+          }, 300);
+        }
+      });
+    }
+
+    // ==================== SCROLL TO MIXES ====================
+    function scrollToMixes() {
+      document.getElementById('mixes').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // ==================== SCROLL REVEAL ====================
+    function initScrollReveal() {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+      document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    }
+    initScrollReveal();
+
+    // ==================== KEYBOARD SHORTCUTS ====================
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' && e.target.tagName !== 'INPUT') {
+        e.preventDefault();
+        togglePlay();
+      }
+      if (e.code === 'ArrowRight' && e.target.tagName !== 'INPUT') {
+        nextMix();
+      }
+      if (e.code === 'ArrowLeft' && e.target.tagName !== 'INPUT') {
+        prevMix();
+      }
+    });
+
+    // ==================== NAV SCROLL EFFECT ====================
+    let lastScroll = 0;
+    window.addEventListener('scroll', () => {
+      const nav = document.querySelector('nav');
+      const currentScroll = window.pageYOffset;
+
+      if (currentScroll > 100) {
+        nav.style.background = 'rgba(6, 6, 10, 0.9)';
+      } else {
+        nav.style.background = 'rgba(6, 6, 10, 0.6)';
+      }
+
+      lastScroll = currentScroll;
+    });
+  </script>
+</body>
+</html>
