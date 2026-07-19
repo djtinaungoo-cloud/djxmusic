@@ -17,7 +17,17 @@ export default defineConfig(async ({ mode }) => {
     Object.entries(rawEnv).filter(([k]) => k.startsWith('VITE_') || k.startsWith('NEXT_PUBLIC_'))
   );
 
-  const processEnvDefines: Record<string, string> = {};
+  // Provide a full process.env object for code that expects it at runtime
+  const processEnv = {
+    NODE_ENV: mode,
+    ...env,
+  };
+
+  const processEnvDefines: Record<string, string> = {
+    'process.env': JSON.stringify(processEnv),
+  };
+
+  // Also keep granular replacements for compatibility
   for (const [key, value] of Object.entries(env)) {
     processEnvDefines[`process.env.${key}`] = JSON.stringify(value);
   }
