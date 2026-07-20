@@ -4,14 +4,19 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig(async ({ mode }) => {
   const plugins = [react()];
-  try {
-    // @ts-ignore
-    const m = await import('./.vite-source-tags.js');
-    plugins.push(m.sourceTags());
-  } catch {}
 
-  // Load env then filter only the prefixes we want. Passing an array to loadEnv isn't supported
-  // in some Vite versions, so load everything and filter here to be safe.
+  // Load optional source tags plugin
+  try {
+    const m = await import('./.vite-source-tags.js');
+    if (m.sourceTags) {
+      plugins.push(m.sourceTags());
+    }
+  } catch {
+    // Source tags plugin not found or failed to load - continue without it
+  }
+
+  // Load and filter environment variables
+  // We filter to only VITE_ and NEXT_PUBLIC_ prefixes for security and clarity
   const rawEnv = loadEnv(mode, process.cwd());
   const env = Object.fromEntries(
     Object.entries(rawEnv).filter(([k]) => k.startsWith('VITE_') || k.startsWith('NEXT_PUBLIC_'))
@@ -23,14 +28,16 @@ export default defineConfig(async ({ mode }) => {
     ...env,
   };
 
+  // Create define object with both full process.env and granular replacements for compatibility
   const processEnvDefines: Record<string, string> = {
     'process.env': JSON.stringify(processEnv),
+    ...Object.fromEntries(
+      Object.entries(env).map(([key, value]) => [
+        `process.env.${key}`,
+        JSON.stringify(value),
+      ])
+    ),
   };
-
-  // Also keep granular replacements for compatibility
-  for (const [key, value] of Object.entries(env)) {
-    processEnvDefines[`process.env.${key}`] = JSON.stringify(value);
-  }
 
   return {
     plugins,
