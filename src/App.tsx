@@ -5,7 +5,7 @@ import FlipCounter from './components/FlipCounter';
 function DjxLogo() {
   return (
     <img
-      src="/djx-logo.jpg"
+      src="/public/djx-logo.jpg"
       alt="DJX Logo"
       draggable={false}
       style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '50%' }}
