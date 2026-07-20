@@ -5,16 +5,6 @@ import react from '@vitejs/plugin-react'
 export default defineConfig(async ({ mode }) => {
   const plugins = [react()];
 
-  // Load optional source tags plugin
-  try {
-    const m = await import('./.vite-source-tags.js');
-    if (m.sourceTags) {
-      plugins.push(m.sourceTags());
-    }
-  } catch {
-    // Source tags plugin not found or failed to load - continue without it
-  }
-
   // Load and filter environment variables
   // We filter to only VITE_ and NEXT_PUBLIC_ prefixes for security and clarity
   const rawEnv = loadEnv(mode, process.cwd());
