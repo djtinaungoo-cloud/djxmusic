@@ -30,6 +30,7 @@ export default defineConfig(async ({ mode }) => {
   };
 
   return {
+    base: '/djxmusic/',
     plugins,
     envPrefix: ['VITE_', 'NEXT_PUBLIC_'],
     define: processEnvDefines,
